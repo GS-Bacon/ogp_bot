@@ -1,0 +1,15 @@
+[Unit]
+Description=OGP Bot - Discord Bot for MakerWorld OGP
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bacon
+WorkingDirectory=/home/bacon/ogp_bot
+ExecStart=/usr/bin/python3 bot.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

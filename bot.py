@@ -11,7 +11,7 @@ import config
 from fetchers import find_fetcher
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     handlers=[
         logging.StreamHandler(),
@@ -46,7 +46,6 @@ class OGPBot(discord.Client):
         logger.info("Logged in as %s (id=%s)", self.user, self.user.id if self.user else "?")
 
     async def on_message(self, message: discord.Message) -> None:
-        logger.debug("on_message: author=%s bot=%s content=%r", message.author, message.author.bot, message.content[:100])
         if message.author.bot:
             return
 
