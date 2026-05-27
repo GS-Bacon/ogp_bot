@@ -21,7 +21,7 @@ _UA = (
 _TIMEOUT = aiohttp.ClientTimeout(total=10)
 _URL_RE = re.compile(r"makerworld\.com/(?:[a-z]{2}/)?models/(\d+)")
 
-_DESC_MAX_CHARS = 20
+_DESC_MAX_CHARS = 50
 _CACHE_TTL = 60  # seconds
 
 
