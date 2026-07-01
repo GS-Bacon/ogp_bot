@@ -93,18 +93,20 @@ class MakerWorldFetcher(Fetcher):
         title = data.get("title") or f"MakerWorld model {identifier}"
         image_url = data.get("coverUrl") or None
         description = _short_desc(data.get("summary"))
-        extra: dict = {}
+
+        footer_parts: list[str] = []
         if (likes := data.get("likeCount")) is not None:
-            extra["likes"] = likes
+            footer_parts.append(f"❤️ {likes:,}")
         if (downloads := data.get("downloadCount")) is not None:
-            extra["downloads"] = downloads
+            footer_parts.append(f"⬇️ {downloads:,}")
+        footer = "  ".join(footer_parts) if footer_parts else None
 
         result = OGPData(
             title=title,
             source_url=url,
             image_url=image_url,
             description=description,
-            extra=extra,
+            footer=footer,
         )
         self._cache[identifier] = (result, now + _CACHE_TTL)
         return result

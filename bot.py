@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 _URL_RE = re.compile(r"https?://\S+")
 
-_MAKERWORLD_COLOR = discord.Color.from_str("#00ae86")
+_DEFAULT_COLOR = discord.Color.from_str("#00ae86")
 
 
 class OGPBot(discord.Client):
@@ -64,23 +64,20 @@ class OGPBot(discord.Client):
             if data is None:
                 continue
 
+            color = discord.Color(data.color) if data.color is not None else _DEFAULT_COLOR
             embed = discord.Embed(
                 title=data.title,
                 url=data.source_url,
-                color=_MAKERWORLD_COLOR,
+                color=color,
             )
             if data.description:
                 embed.description = data.description
             if data.image_url:
-                embed.set_thumbnail(url=data.image_url)
-
-            footer_parts: list[str] = []
-            if "likes" in data.extra:
-                footer_parts.append(f"❤️ {data.extra['likes']:,}")
-            if "downloads" in data.extra:
-                footer_parts.append(f"⬇️ {data.extra['downloads']:,}")
-            if footer_parts:
-                embed.set_footer(text="  ".join(footer_parts))
+                embed.set_image(url=data.image_url)
+            for name, value, inline in data.fields:
+                embed.add_field(name=name, value=value, inline=inline)
+            if data.footer:
+                embed.set_footer(text=data.footer)
 
             await message.channel.send(embed=embed)
             logger.info(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
-from typing import Any
 
 import aiohttp
 
@@ -13,7 +12,9 @@ class OGPData:
     source_url: str
     image_url: str | None = None
     description: str | None = None
-    extra: dict[str, Any] = field(default_factory=dict)
+    fields: list[tuple[str, str, bool]] = field(default_factory=list)
+    footer: str | None = None
+    color: int | None = None
 
 
 class Fetcher(abc.ABC):
