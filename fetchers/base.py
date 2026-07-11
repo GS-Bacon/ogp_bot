@@ -29,6 +29,20 @@ class Fetcher(abc.ABC):
         """Fetch metadata and return OGPData, or None on failure."""
 
 
+async def read_capped(resp: aiohttp.ClientResponse, cap: int) -> bytes:
+    """レスポンスボディを EOF または cap まで読む。
+
+    StreamReader.read(n) は n バイト揃うのを待たず到着済み分だけ返すため、
+    ループで読まないと本文の先頭チャンクしか得られない。
+    """
+    buf = bytearray()
+    async for chunk in resp.content.iter_chunked(64 * 1024):
+        buf += chunk
+        if len(buf) >= cap:
+            break
+    return bytes(buf[:cap])
+
+
 REGISTRY: list[Fetcher] = []
 
 

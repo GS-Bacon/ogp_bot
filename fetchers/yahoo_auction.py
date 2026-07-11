@@ -8,7 +8,7 @@ from datetime import datetime
 
 import aiohttp
 
-from .base import Fetcher, OGPData, REGISTRY
+from .base import Fetcher, OGPData, REGISTRY, read_capped
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,8 @@ _NEXT_DATA_RE = re.compile(
 )
 
 _CACHE_TTL = 60
-_MAX_READ_BYTES = 256 * 1024
+# __NEXT_DATA__ の終端が実測 176KB 付近まで来るページがあるため余裕を持たせる
+_MAX_READ_BYTES = 1024 * 1024
 _YAHOO_COLOR = 0xFF0033
 
 
@@ -59,7 +60,7 @@ class YahooAuctionFetcher(Fetcher):
                         "Yahoo Auction returned %s for id=%s", resp.status, identifier
                     )
                     return None
-                raw = await resp.content.read(_MAX_READ_BYTES)
+                raw = await read_capped(resp, _MAX_READ_BYTES)
         except Exception:
             logger.exception("Failed to fetch Yahoo Auction page for id=%s", identifier)
             return None
@@ -104,14 +105,10 @@ def _build_ogp(item: dict, fallback_url: str) -> OGPData:
     if price is not None:
         fields.append(("現在価格", f"¥{int(price):,}", True))
 
-    featured = item.get("featuredPrice")
-    if featured is not None:
-        try:
-            f = float(featured)
-        except (TypeError, ValueError):
-            f = 0.0
-        if f > 0:
-            fields.append(("即決価格", f"¥{int(f):,}", True))
+    # featuredPrice は「注目のオークション」掲載料なので使わない。即決価格は bidorbuy
+    bidorbuy = item.get("bidorbuy")
+    if bidorbuy:
+        fields.append(("即決価格", f"¥{int(bidorbuy):,}", True))
 
     bids = item.get("bids")
     if bids is not None:

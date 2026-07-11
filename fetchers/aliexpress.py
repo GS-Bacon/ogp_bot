@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 
 import aiohttp
 
-from .base import Fetcher, OGPData, REGISTRY
+from .base import Fetcher, OGPData, REGISTRY, read_capped
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class AliExpressFetcher(Fetcher):
                         "AliExpress returned %s for id=%s", resp.status, identifier
                     )
                     return None
-                raw = await resp.content.read(_MAX_READ_BYTES)
+                raw = await read_capped(resp, _MAX_READ_BYTES)
         except Exception:
             logger.exception("Failed to fetch AliExpress page for id=%s", identifier)
             return None
