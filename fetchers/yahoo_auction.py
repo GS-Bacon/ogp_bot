@@ -18,7 +18,8 @@ _UA = (
     "Chrome/120.0.0.0 Safari/537.36"
 )
 _TIMEOUT = aiohttp.ClientTimeout(total=10)
-_URL_RE = re.compile(r"auctions\.yahoo\.co\.jp/jp/auction/([a-zA-Z]\d+)")
+# ID は「英字1文字+数字」のほか数字のみの形式もある
+_URL_RE = re.compile(r"auctions\.yahoo\.co\.jp/jp/auction/([a-zA-Z]?\d+)")
 _NEXT_DATA_RE = re.compile(
     r'<script id="__NEXT_DATA__" type="application/json">(.+?)</script>', re.S
 )

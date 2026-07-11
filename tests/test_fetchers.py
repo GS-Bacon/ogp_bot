@@ -87,6 +87,15 @@ async def _run_fetch(fetcher, identifier: str, html: str):
         await runner.cleanup()
 
 
+def test_yahoo_url_match():
+    f = YahooAuctionFetcher()
+    # 英字接頭辞つき ID
+    assert f.match("https://auctions.yahoo.co.jp/jp/auction/p1220722681") == "p1220722681"
+    # 数字のみの ID も実在する
+    assert f.match("https://auctions.yahoo.co.jp/jp/auction/1236316689") == "1236316689"
+    assert f.match("https://example.com/foo") is None
+
+
 def test_yahoo_auction_parses_chunked_response():
     result = asyncio.run(
         _run_fetch(YahooAuctionFetcher(), "x1234567890", _yahoo_html())
