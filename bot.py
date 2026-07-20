@@ -3,12 +3,17 @@ from __future__ import annotations
 import logging
 import logging.handlers
 import re
+from pathlib import Path
 
 import aiohttp
 import discord
+from discord import app_commands
 
 import config
+from blocklist import Blocklist
 from fetchers import find_fetcher
+from fetchers.base import REGISTRY
+from ui import BlocklistView, build_embed
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +30,7 @@ logger = logging.getLogger(__name__)
 _URL_RE = re.compile(r"https?://\S+")
 
 _DEFAULT_COLOR = discord.Color.from_str("#00ae86")
+_BLOCKLIST_PATH = Path("data/blocklist.json")
 
 
 class OGPBot(discord.Client):
@@ -33,9 +39,14 @@ class OGPBot(discord.Client):
         intents.message_content = True
         super().__init__(intents=intents)
         self._session: aiohttp.ClientSession | None = None
+        self.blocklist = Blocklist(_BLOCKLIST_PATH)
+        self.tree = app_commands.CommandTree(self)
+        _register_commands(self.tree, self.blocklist)
 
     async def setup_hook(self) -> None:
         self._session = aiohttp.ClientSession()
+        self.blocklist.load()
+        await self.tree.sync()
 
     async def close(self) -> None:
         if self._session:
@@ -60,6 +71,10 @@ class OGPBot(discord.Client):
             if hit is None:
                 continue
             fetcher, identifier = hit
+
+            if message.guild and self.blocklist.is_blocked(message.guild.id, fetcher.KEY):
+                continue
+
             data = await fetcher.fetch(identifier, url, self._session)
             if data is None:
                 continue
@@ -86,6 +101,24 @@ class OGPBot(discord.Client):
                 message.channel.id,
                 getattr(message.guild, "id", None),
             )
+
+
+def _register_commands(tree: app_commands.CommandTree, blocklist: Blocklist) -> None:
+    @tree.command(
+        name="ogp-block",
+        description="このサーバーで OGP を表示しないサイトを設定します",
+    )
+    @app_commands.default_permissions(manage_guild=True)
+    @app_commands.guild_only()
+    async def ogp_block(interaction: discord.Interaction) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "このコマンドはサーバー内でのみ使用できます。", ephemeral=True
+            )
+            return
+        embed = build_embed(interaction.guild.name, blocklist, interaction.guild.id, REGISTRY)
+        view = BlocklistView(blocklist, interaction.guild.id, REGISTRY)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 def main() -> None:

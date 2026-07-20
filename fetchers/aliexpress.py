@@ -45,6 +45,9 @@ class _OGTagExtractor(HTMLParser):
 
 
 class AliExpressFetcher(Fetcher):
+    KEY = "aliexpress"
+    DISPLAY_NAME = "AliExpress"
+
     def __init__(self) -> None:
         # {id: (OGPData, expires_at)}
         self._cache: dict[str, tuple[OGPData, float]] = {}

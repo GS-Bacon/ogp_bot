@@ -55,6 +55,9 @@ def _short_desc(raw: str | None) -> str | None:
 
 
 class MakerWorldFetcher(Fetcher):
+    KEY = "makerworld"
+    DISPLAY_NAME = "MakerWorld"
+
     def __init__(self) -> None:
         # {id: (OGPData, expires_at)}
         self._cache: dict[str, tuple[OGPData, float]] = {}

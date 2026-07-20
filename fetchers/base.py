@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 import aiohttp
 
@@ -18,6 +19,11 @@ class OGPData:
 
 
 class Fetcher(abc.ABC):
+    # サブクラスで必ず定義する。KEY は blocklist などの保存用の安定 ID、
+    # DISPLAY_NAME は UI での表示名。
+    KEY: ClassVar[str]
+    DISPLAY_NAME: ClassVar[str]
+
     @abc.abstractmethod
     def match(self, url: str) -> str | None:
         """Return an identifier string if this fetcher handles the URL, else None."""

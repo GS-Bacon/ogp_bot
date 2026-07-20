@@ -31,6 +31,9 @@ _YAHOO_COLOR = 0xFF0033
 
 
 class YahooAuctionFetcher(Fetcher):
+    KEY = "yahoo_auction"
+    DISPLAY_NAME = "Yahoo!オークション"
+
     def __init__(self) -> None:
         self._cache: dict[str, tuple[OGPData, float]] = {}
 
