@@ -87,6 +87,20 @@ async def _run_fetch(fetcher, identifier: str, html: str):
         await runner.cleanup()
 
 
+def test_aliexpress_url_match():
+    f = AliExpressFetcher()
+    assert (
+        f.match("https://www.aliexpress.com/item/1005003290975115.html")
+        == "1005003290975115"
+    )
+    assert (
+        f.match("https://ja.aliexpress.com/item/1005003290975115.html?foo=bar")
+        == "1005003290975115"
+    )
+    assert f.match("https://a.aliexpress.com/_c2RbMLAx") == "c2RbMLAx"
+    assert f.match("https://example.com/foo") is None
+
+
 def test_yahoo_url_match():
     f = YahooAuctionFetcher()
     # 英字接頭辞つき ID

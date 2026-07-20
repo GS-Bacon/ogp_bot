@@ -17,7 +17,9 @@ _UA = (
     "Chrome/120.0.0.0 Safari/537.36"
 )
 _TIMEOUT = aiohttp.ClientTimeout(total=10)
-_URL_RE = re.compile(r"(?:[a-z0-9-]+\.)?aliexpress\.(?:com|us)/item/(\d+)\.html")
+_URL_RE = re.compile(
+    r"(?:[a-z0-9-]+\.)?aliexpress\.(?:com|us)/(?:item/(\d+)\.html|_([A-Za-z0-9]+))"
+)
 
 _CACHE_TTL = 60  # seconds
 # 商品 1 ページが ~75KB 程度。og タグは <head> 内にあるので 256KB あれば十分手前で見つかる
@@ -54,7 +56,9 @@ class AliExpressFetcher(Fetcher):
 
     def match(self, url: str) -> str | None:
         m = _URL_RE.search(url)
-        return m.group(1) if m else None
+        if not m:
+            return None
+        return m.group(1) or m.group(2)
 
     async def fetch(
         self, identifier: str, url: str, session: aiohttp.ClientSession
